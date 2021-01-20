@@ -21,4 +21,8 @@ export class ReadUserDto {
   @Expose()
   @IsEmail()
   email: string;
+
+  @Expose()
+  @IsString()
+  role: string;
 }
