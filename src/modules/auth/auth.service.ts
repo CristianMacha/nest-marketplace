@@ -1,25 +1,21 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { plainToClass } from 'class-transformer';
-import { InjectModel } from '@nestjs/mongoose';
 import { JwtService } from '@nestjs/jwt';
-import { Model } from 'mongoose';
 
 import { ReadUserDto } from '../user/dto/user.dto';
-import { User, UserDocument } from '../user/schemas/user.schema';
 import { ResponseSigninDto, SigninDto, SignupDto } from './dto/auth.dto';
 import { comparePassword, encryptPassword } from './utils/bcrypt';
+import { UserRepository } from '../user/user.repository';
 
 @Injectable()
 export class AuthService {
   constructor(
-    @InjectModel(User.name) private userModel: Model<UserDocument>,
+    private userRepository: UserRepository,
     private jwtService: JwtService,
   ) {}
 
   async signin(signinDto: SigninDto) {
-    const userdb = await this.userModel
-      .findOne({ email: signinDto.email })
-      .exec();
+    const userdb = await this.userRepository.findByEmail(signinDto.email);
     if (!userdb)
       throw new BadRequestException('Credenciales incorrectos - email');
 
@@ -38,17 +34,15 @@ export class AuthService {
   }
 
   async signup(signupDto: SignupDto): Promise<ReadUserDto> {
-    const userdb = await this.userModel
-      .findOne({ email: signupDto.email })
-      .exec();
+    const userdb = await this.userRepository.findByEmail(signupDto.email);
     if (userdb)
       throw new BadRequestException(`El email ${signupDto.email} ya existe.`);
 
     const hashPassword = await encryptPassword(signupDto.password);
 
-    const newUser = new this.userModel(signupDto);
+    const newUser = await this.userRepository.create(signupDto);
     newUser.password = hashPassword;
-    const createdUser = await newUser.save();
+    const createdUser = await this.userRepository.save(newUser);
     return createdUser;
   }
 }

@@ -1,34 +1,27 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { plainToClass } from 'class-transformer';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
 
 import { CreateStoreDto, ReadStoreDto } from './dto/store.dto';
-import { Store, StoreDocument } from './schemas/store.schema';
+import { StoreRepository } from './store.repository';
 
 @Injectable()
 export class StoreService {
-  constructor(
-    @InjectModel(Store.name) private storeModel: Model<StoreDocument>,
-  ) {}
+  constructor(private storeRepository: StoreRepository) {}
 
   async create(createStoreDto: CreateStoreDto, user: any) {
-    const storedb = await this.storeModel
-      .findOne({ ruc: createStoreDto.ruc })
-      .exec();
+    const storedb = await this.storeRepository.findByRuc(createStoreDto.ruc);
+
     if (storedb) throw new BadRequestException('La tienda ya esta registrada.');
 
-    const newStore = new this.storeModel(createStoreDto);
+    const newStore = await this.storeRepository.create(createStoreDto);
     newStore.user = user;
-    const createdStore = await newStore.save();
+    const createdStore = await this.storeRepository.save(newStore);
 
     return plainToClass(ReadStoreDto, createdStore);
   }
 
   async findAll() {
-    const storesdb = await this.storeModel.find().exec();
-    console.log(storesdb);
-    
+    const storesdb = await this.storeRepository.findAll();
     return storesdb.map((store) => plainToClass(ReadStoreDto, store));
   }
 }
