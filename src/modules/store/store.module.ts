@@ -11,6 +11,7 @@ import { StoreRepository } from './store.repository';
     MongooseModule.forFeature([{ name: Store.name, schema: StoreSchema}])
   ],
   controllers: [StoreController],
-  providers: [StoreService, StoreRepository]
+  providers: [StoreService, StoreRepository],
+  exports: [StoreRepository]
 })
 export class StoreModule {}

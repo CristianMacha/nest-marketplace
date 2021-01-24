@@ -1,15 +1,8 @@
-import {
-  IsArray,
-  IsInstance,
-  IsObject,
-  IsString,
-  Validate,
-} from 'class-validator';
+import { IsArray, IsInstance, IsOptional, IsString } from 'class-validator';
 import { Exclude, Expose, Type } from 'class-transformer';
 
 import { Social } from '../interfaces/social.interface';
-import { ReadUserDto } from 'src/modules/user/dto/user.dto';
-import { User } from 'src/modules/user/schemas/user.schema';
+import { CreateProductDto } from 'src/modules/product/dto/product.dto';
 
 class ReadSocial {
   name: string;
@@ -33,6 +26,12 @@ export class CreateStoreDto {
   @Type(() => ReadSocial)
   @IsInstance(ReadSocial, { each: true })
   social: Social[];
+
+  @IsOptional()
+  @IsArray()
+  @Type(() => CreateProductDto)
+  @IsInstance(CreateProductDto, { each: true })
+  products: CreateProductDto[];
 }
 
 @Exclude()

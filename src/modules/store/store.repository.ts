@@ -3,6 +3,7 @@ import { Injectable } from '@nestjs/common';
 import { Model } from 'mongoose';
 
 import { Store, StoreDocument } from './schemas/store.schema';
+import { User } from '../user/schemas/user.schema';
 
 @Injectable()
 export class StoreRepository {
@@ -16,7 +17,7 @@ export class StoreRepository {
   }
 
   async save(storeDocument: StoreDocument) {
-    const createdStore = storeDocument.save();
+    const createdStore = await storeDocument.save();
     return createdStore;
   }
 
@@ -26,7 +27,12 @@ export class StoreRepository {
   }
 
   async findAll() {
-    const stores = await this.storeModel.find().exec();
+    const stores = await this.storeModel.find().populate('products').exec();
     return stores;
+  }
+
+  async storeByIdUser(user: User) {
+    const store = await this.storeModel.findOne({ user }).exec();
+    return store;
   }
 }

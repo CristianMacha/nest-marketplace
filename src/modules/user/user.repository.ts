@@ -28,4 +28,9 @@ export class UserRepository {
     const user = await this.userModel.findOne({ email }).exec();
     return user;
   }
+
+  async findById(id: string) {
+    const user = await this.userModel.findById(id).exec();
+    return user;
+  }
 }
